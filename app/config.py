@@ -22,8 +22,11 @@ class DataSettings(BaseModel):
     """File-system locations for raw inputs and local artifacts."""
 
     data_dir: Path = BASE_DIR / "data"
-    startups_csv: str = "startups.csv"
-    investors_csv: str = "investors.csv"
+    artifacts_dir: Path = data_dir / "artifacts"
+    startups_csv: str = "examples/startups.sample.csv"
+    investors_csv: str = "examples/investors.sample.csv"
+    ground_truth_csv: str = "examples/ground_truth.sample.csv"
+    investor_index_file: str = "investor_index.npz"
 
     @property
     def startups_path(self) -> Path:
@@ -32,6 +35,14 @@ class DataSettings(BaseModel):
     @property
     def investors_path(self) -> Path:
         return self.data_dir / self.investors_csv
+
+    @property
+    def ground_truth_path(self) -> Path:
+        return self.data_dir / self.ground_truth_csv
+
+    @property
+    def investor_index_path(self) -> Path:
+        return self.artifacts_dir / self.investor_index_file
 
 
 class EmbeddingSettings(BaseModel):

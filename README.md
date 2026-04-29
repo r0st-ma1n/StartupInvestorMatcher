@@ -69,6 +69,14 @@ Why this repository is relevant for applied ML and data engineering interviews:
 
 ## API
 
+Available demo endpoints:
+
+- `GET /health`
+- `GET /startups`
+- `GET /investors`
+- `POST /match`
+- `GET /match/{startup_id}`
+
 `POST /match`
 
 Request body:
@@ -133,6 +141,36 @@ Validate importable app syntax:
 python -m py_compile app/main.py
 ```
 
+Run the sample benchmark:
+
+```bash
+python scripts/run_benchmark.py --k 2
+```
+
+Build precomputed investor embeddings:
+
+```bash
+python scripts/build_index.py
+```
+
+Generate a small synthetic dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size small --seed 42
+```
+
+Overwrite an existing generated dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size medium --seed 42 --overwrite
+```
+
+Run the benchmark on generated data:
+
+```bash
+python scripts/run_benchmark.py --k 5 --startups-path data/generated/startups.csv --investors-path data/generated/investors.csv --ground-truth-path data/generated/ground_truth.csv
+```
+
 ## Expected CSV Inputs
 
 `startups.csv`
@@ -177,6 +215,13 @@ Sample files are provided in:
 
 - `data/examples/startups.sample.csv`
 - `data/examples/investors.sample.csv`
+- `data/examples/ground_truth.sample.csv`
+
+Generated datasets are written to:
+
+- `data/generated/startups.csv`
+- `data/generated/investors.csv`
+- `data/generated/ground_truth.csv`
 
 ## Local Run
 
@@ -200,6 +245,90 @@ curl -X POST "http://127.0.0.1:8000/match" ^
   -d "{\"startup\":{\"startup_id\":\"s1\",\"name\":\"Acme AI\",\"description\":\"AI tooling for diligence\",\"industries\":[\"AI\"],\"stage\":\"Seed\",\"country\":\"US\",\"region\":\"North America\",\"fundraising_amount\":1000000,\"currency\":\"USD\"},\"investors\":[{\"investor_id\":\"i1\",\"name\":\"North Star Ventures\",\"description\":\"AI-focused seed fund\",\"industries\":[\"AI\"],\"preferred_stages\":[\"Seed\"],\"countries\":[\"US\"],\"regions\":[\"North America\"],\"ticket_min\":250000,\"ticket_max\":2000000,\"currency\":\"USD\"}],\"top_k\":1,\"candidate_pool_size\":5}"
 ```
 
+Match a sample startup by ID:
+
+```bash
+curl "http://127.0.0.1:8000/match/s1?top_k=2&candidate_pool_size=2"
+```
+
+Health check:
+
+```bash
+curl "http://127.0.0.1:8000/health"
+```
+
+Expected response shape:
+
+```json
+{
+  "matches": [
+    {
+      "investor_id": "i1",
+      "investor_name": "North Star Ventures",
+      "rank": 1,
+      "final_score": 0.97,
+      "score_breakdown": {
+        "semantic_similarity": 0.91,
+        "industry_match": 1.0,
+        "stage_match": 1.0,
+        "geo_match": 1.0,
+        "ticket_size_fit": 1.0,
+        "weighted_score": 0.97,
+        "matched_industries": ["AI"],
+        "reasons": [
+          "Strong semantic similarity",
+          "Industry overlap: AI",
+          "Stage preference match",
+          "Geographic focus match",
+          "Ticket size fit"
+        ]
+      },
+      "reasons": [
+        "Strong semantic similarity",
+        "Industry overlap: AI",
+        "Stage preference match",
+        "Geographic focus match",
+        "Ticket size fit"
+      ]
+    }
+  ]
+}
+```
+
+## Precomputed Investor Index
+
+For production-style matching, the API can reuse precomputed investor embeddings instead of
+re-embedding the default investor catalog on every request.
+
+Build the index artifact:
+
+```bash
+python scripts/build_index.py
+```
+
+Artifact location:
+
+- `data/artifacts/investor_index.npz`
+
+What is stored:
+
+- investor ids
+- investor embeddings
+- embedding model name
+- source hash for the investors CSV
+- per-investor profile hashes used for safe reuse
+
+How the API uses it:
+
+- if the index artifact exists and the investor profiles match the stored hashes, the API uses the precomputed embeddings
+- if the artifact is missing or stale, the service falls back to in-memory embedding generation automatically
+
+Production tradeoffs:
+
+- this avoids repeated embedding work for stable investor catalogs
+- it is still a file-based MVP artifact, not a full vector index or refresh pipeline
+- for larger systems, you would usually add background rebuilds, versioning, and a dedicated retrieval store
+
 ## Testing
 
 The repository includes unit tests for:
@@ -218,6 +347,20 @@ CI coverage:
 - dependency installation from `requirements.txt`
 - `python -m py_compile app/main.py`
 - `pytest`
+
+## Benchmarking
+
+The benchmark script compares:
+
+- semantic-only retrieval
+- retrieval plus rule-based reranking
+
+Metrics reported:
+
+- `precision@k`
+- `recall@k`
+- `hit-rate@k`
+- `MRR@k`
 
 ## Next Extensions
 

@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from app.config import RetrievalSettings
 from app.models import Candidate, InvestorProfile, MatchResult, StartupProfile
 from app.services.embedding_service import EmbeddingService
+from app.services.investor_index_service import InvestorEmbeddingIndex, InvestorIndexService
 from app.services.retrieval_service import RetrievalService
 from app.services.scoring_service import ScoringService
 
@@ -18,11 +19,15 @@ class MatchingService:
         retrieval_service: RetrievalService,
         retrieval_settings: RetrievalSettings,
         scoring_service: ScoringService | None = None,
+        investor_index_service: InvestorIndexService | None = None,
+        investor_index: InvestorEmbeddingIndex | None = None,
     ) -> None:
         self._embedding_service = embedding_service
         self._retrieval_service = retrieval_service
         self._retrieval_settings = retrieval_settings
         self._scoring_service = scoring_service
+        self._investor_index_service = investor_index_service
+        self._investor_index = investor_index
 
     def generate_candidates(
         self,
@@ -123,7 +128,14 @@ class MatchingService:
         top_k: int | None,
     ) -> list[Candidate]:
         startup_embedding = self._embedding_service.embed_startups([startup])[0]
-        investor_embeddings = self._embedding_service.embed_investors(investors)
+        investor_embeddings = None
+        if self._investor_index_service is not None:
+            investor_embeddings = self._investor_index_service.resolve_embeddings(
+                list(investors),
+                self._investor_index,
+            )
+        if investor_embeddings is None:
+            investor_embeddings = self._embedding_service.embed_investors(investors)
         return self._retrieval_service.retrieve_top_k_candidates(
             startup=startup,
             startup_embedding=startup_embedding,

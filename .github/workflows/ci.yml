@@ -8,6 +8,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
 
     steps:
       - name: Checkout repository
@@ -25,8 +27,8 @@ jobs:
 
       - name: Validate syntax
         run: |
-          python -m py_compile app/main.py
+          python -m py_compile app/main.py scripts/run_benchmark.py scripts/build_index.py scripts/generate_synthetic_data.py
 
       - name: Run tests
         run: |
-          pytest --basetemp .pytest_tmp_ci
+          python -m pytest --basetemp .pytest_tmp_ci

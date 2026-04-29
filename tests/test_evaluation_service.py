@@ -25,6 +25,7 @@ def test_evaluate_predictions_computes_mean_metrics() -> None:
     assert summary.mean_precision_at_k == pytest.approx(0.25)
     assert summary.mean_recall_at_k == pytest.approx(0.25)
     assert summary.hit_rate_at_k == pytest.approx(0.5)
+    assert summary.mean_mrr_at_k == pytest.approx(0.25)
 
 
 def test_evaluate_match_results_extracts_investor_ids() -> None:
@@ -67,6 +68,7 @@ def test_evaluate_match_results_extracts_investor_ids() -> None:
     assert summary.mean_precision_at_k == pytest.approx(1.0)
     assert summary.mean_recall_at_k == pytest.approx(0.5)
     assert summary.hit_rate_at_k == pytest.approx(1.0)
+    assert summary.mean_mrr_at_k == pytest.approx(1.0)
 
 
 def test_evaluate_predictions_rejects_invalid_k() -> None:
@@ -87,3 +89,4 @@ def test_evaluate_predictions_penalizes_short_ranked_lists_at_k() -> None:
 
     assert summary.mean_precision_at_k == pytest.approx(1 / 3)
     assert summary.mean_recall_at_k == pytest.approx(0.5)
+    assert summary.mean_mrr_at_k == pytest.approx(1.0)

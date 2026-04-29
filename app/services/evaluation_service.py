@@ -15,6 +15,7 @@ class StartupEvaluationMetrics(BaseModel):
     precision_at_k: float = Field(ge=0.0, le=1.0)
     recall_at_k: float = Field(ge=0.0, le=1.0)
     hit_rate_at_k: float = Field(ge=0.0, le=1.0)
+    mrr_at_k: float = Field(ge=0.0, le=1.0)
     predicted_count: int = Field(ge=0)
     relevant_count: int = Field(ge=0)
 
@@ -27,6 +28,7 @@ class EvaluationSummary(BaseModel):
     mean_precision_at_k: float = Field(ge=0.0, le=1.0)
     mean_recall_at_k: float = Field(ge=0.0, le=1.0)
     hit_rate_at_k: float = Field(ge=0.0, le=1.0)
+    mean_mrr_at_k: float = Field(ge=0.0, le=1.0)
     per_startup: list[StartupEvaluationMetrics] = Field(default_factory=list)
 
 
@@ -50,6 +52,11 @@ class EvaluationService:
             predicted_ids = list(predictions.get(startup_id, []))[:k]
             relevant_ids = set(ground_truth.get(startup_id, []))
             hits = sum(1 for investor_id in predicted_ids if investor_id in relevant_ids)
+            reciprocal_rank = 0.0
+            for rank, investor_id in enumerate(predicted_ids, start=1):
+                if investor_id in relevant_ids:
+                    reciprocal_rank = 1.0 / rank
+                    break
 
             precision_at_k = hits / k
             recall_at_k = hits / len(relevant_ids) if relevant_ids else 0.0
@@ -62,6 +69,7 @@ class EvaluationService:
                     precision_at_k=precision_at_k,
                     recall_at_k=recall_at_k,
                     hit_rate_at_k=hit_rate_at_k,
+                    mrr_at_k=reciprocal_rank,
                     predicted_count=len(predicted_ids),
                     relevant_count=len(relevant_ids),
                 )
@@ -75,6 +83,7 @@ class EvaluationService:
                 mean_precision_at_k=0.0,
                 mean_recall_at_k=0.0,
                 hit_rate_at_k=0.0,
+                mean_mrr_at_k=0.0,
                 per_startup=[],
             )
 
@@ -84,6 +93,7 @@ class EvaluationService:
             mean_precision_at_k=sum(item.precision_at_k for item in per_startup) / startup_count,
             mean_recall_at_k=sum(item.recall_at_k for item in per_startup) / startup_count,
             hit_rate_at_k=sum(item.hit_rate_at_k for item in per_startup) / startup_count,
+            mean_mrr_at_k=sum(item.mrr_at_k for item in per_startup) / startup_count,
             per_startup=per_startup,
         )
 

@@ -34,6 +34,10 @@ class EmbeddingService:
         self._encoder_factory = encoder_factory or self._build_default_encoder
         self._encoder: SupportsEncode | None = None
 
+    @property
+    def model_name(self) -> str:
+        return self._settings.model_name
+
     def embed_texts(self, texts: Sequence[str]) -> np.ndarray:
         """Embed raw texts into a dense NumPy matrix."""
 

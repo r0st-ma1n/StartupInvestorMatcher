@@ -1,3 +1,5 @@
 investor_id,name,description,industries,preferred_stages,countries,regions,ticket_min,ticket_max,currency,investor_type,website
 i1,North Star Ventures,"Seed fund focused on AI infrastructure and fintech","AI, Fintech","Pre-Seed, Seed","US, Canada","North America",250000,2000000,USD,VC,https://northstar.example
 i2,Euro Climate Capital,"European investor backing climate software and industrial decarbonization","Climate, SaaS","Seed, Series A","Germany, France","Europe",500000,5000000,EUR,VC,https://euroclimate.example
+i3,Global AI Growth Partners,"Growth-stage investor focused on AI platforms and fintech scale-ups","AI, Fintech","Series B, Series C","Singapore, Japan","Asia",10000000,50000000,USD,VC,https://globalaigrowth.example
+i4,Climate Expansion Fund,"Later-stage climate software investor for industrial decarbonization and energy analytics","Climate, SaaS","Series B, Series C","United Kingdom, Netherlands","Europe",7000000,15000000,EUR,VC,https://climateexpansion.example
