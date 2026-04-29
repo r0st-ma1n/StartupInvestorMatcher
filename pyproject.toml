@@ -17,9 +17,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-cache_dir = ".pytest_cache"
-tmp_path_retention_policy = "none"
-tmp_path_retention_count = 0
+addopts = "-p no:cacheprovider"
 
 [tool.ruff]
 line-length = 100

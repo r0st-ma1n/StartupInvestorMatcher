@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import shutil
+import uuid
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -11,8 +15,8 @@ from app.services import (
 )
 
 
-def test_load_startups_csv_returns_typed_profiles(tmp_path) -> None:
-    csv_path = tmp_path / "startups.csv"
+def test_load_startups_csv_returns_typed_profiles() -> None:
+    csv_path = _workspace_temp_path("startups.csv")
     pd.DataFrame(
         [
             {
@@ -36,10 +40,11 @@ def test_load_startups_csv_returns_typed_profiles(tmp_path) -> None:
     assert startups[0].startup_id == "s1"
     assert startups[0].industries == ["AI", "Fintech"]
     assert startups[0].fundraising_amount == 1500000
+    _cleanup_temp_path(csv_path)
 
 
-def test_load_investors_csv_returns_typed_profiles(tmp_path) -> None:
-    csv_path = tmp_path / "investors.csv"
+def test_load_investors_csv_returns_typed_profiles() -> None:
+    csv_path = _workspace_temp_path("investors.csv")
     pd.DataFrame(
         [
             {
@@ -66,10 +71,11 @@ def test_load_investors_csv_returns_typed_profiles(tmp_path) -> None:
     assert investors[0].preferred_stages == ["Pre-Seed", "Seed"]
     assert investors[0].countries == ["US", "Canada"]
     assert investors[0].ticket_max == 2000000
+    _cleanup_temp_path(csv_path)
 
 
-def test_load_startups_csv_raises_for_missing_required_columns(tmp_path) -> None:
-    csv_path = tmp_path / "startups.csv"
+def test_load_startups_csv_raises_for_missing_required_columns() -> None:
+    csv_path = _workspace_temp_path("startups.csv")
     pd.DataFrame(
         [
             {
@@ -81,10 +87,11 @@ def test_load_startups_csv_raises_for_missing_required_columns(tmp_path) -> None
 
     with pytest.raises(CSVSchemaError):
         load_startups_csv(csv_path)
+    _cleanup_temp_path(csv_path)
 
 
-def test_load_investors_csv_raises_for_invalid_ticket_bounds(tmp_path) -> None:
-    csv_path = tmp_path / "investors.csv"
+def test_load_investors_csv_raises_for_invalid_ticket_bounds() -> None:
+    csv_path = _workspace_temp_path("investors.csv")
     pd.DataFrame(
         [
             {
@@ -104,3 +111,14 @@ def test_load_investors_csv_raises_for_invalid_ticket_bounds(tmp_path) -> None:
 
     with pytest.raises(CSVRowValidationError):
         load_investors_csv(csv_path)
+    _cleanup_temp_path(csv_path)
+
+
+def _workspace_temp_path(filename: str) -> Path:
+    temp_dir = Path("tests") / "_tmp" / uuid.uuid4().hex
+    temp_dir.mkdir(parents=True, exist_ok=False)
+    return temp_dir / filename
+
+
+def _cleanup_temp_path(path: Path) -> None:
+    shutil.rmtree(path.parent, ignore_errors=True)

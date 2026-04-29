@@ -1,0 +1,3 @@
+startup_id,name,description,industries,stage,country,region,fundraising_amount,currency,website
+s1,Acme AI,"AI copilot for investor diligence workflows","AI, Fintech",Seed,US,North America,1000000,USD,https://acme-ai.example
+s2,GreenGrid,"Climate analytics platform for industrial energy optimization","Climate, SaaS",Series A,Germany,Europe,3000000,EUR,https://greengrid.example

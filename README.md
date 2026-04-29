@@ -2,6 +2,18 @@
 
 Production-style portfolio project for startup-investor matching with a hybrid applied-ML and backend architecture.
 
+Suggested GitHub topics:
+
+- `python`
+- `fastapi`
+- `machine-learning`
+- `nlp`
+- `embeddings`
+- `information-retrieval`
+- `ranking`
+- `data-engineering`
+- `entity-resolution`
+
 ## What It Demonstrates
 
 - semantic retrieval with sentence embeddings
@@ -29,6 +41,14 @@ Core pipeline:
 3. retrieve semantic top-k candidates with cosine similarity
 4. rerank candidates with weighted business rules
 5. return explainable match results
+
+Why this repository is relevant for applied ML and data engineering interviews:
+
+- it demonstrates semantic retrieval rather than keyword-only matching
+- it separates candidate generation from reranking and business scoring
+- it includes evaluation metrics for retrieval quality
+- it includes a baseline entity resolution workflow for messy real-world data
+- it packages the logic behind a typed FastAPI service instead of notebook-only code
 
 ## Main Services
 
@@ -85,6 +105,34 @@ Request body:
 }
 ```
 
+## Quickstart
+
+Create a virtual environment and install dependencies:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Run the API locally:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Run tests:
+
+```bash
+pytest --basetemp .pytest_tmp
+```
+
+Validate importable app syntax:
+
+```bash
+python -m py_compile app/main.py
+```
+
 ## Expected CSV Inputs
 
 `startups.csv`
@@ -125,6 +173,11 @@ Notes:
 - missing optional fields are handled gracefully in scoring and dedup flows
 - `ticket_min` must not exceed `ticket_max`
 
+Sample files are provided in:
+
+- `data/examples/startups.sample.csv`
+- `data/examples/investors.sample.csv`
+
 ## Local Run
 
 Install dependencies:
@@ -139,6 +192,14 @@ Run the API:
 uvicorn app.main:app --reload
 ```
 
+Example request:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/match" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"startup\":{\"startup_id\":\"s1\",\"name\":\"Acme AI\",\"description\":\"AI tooling for diligence\",\"industries\":[\"AI\"],\"stage\":\"Seed\",\"country\":\"US\",\"region\":\"North America\",\"fundraising_amount\":1000000,\"currency\":\"USD\"},\"investors\":[{\"investor_id\":\"i1\",\"name\":\"North Star Ventures\",\"description\":\"AI-focused seed fund\",\"industries\":[\"AI\"],\"preferred_stages\":[\"Seed\"],\"countries\":[\"US\"],\"regions\":[\"North America\"],\"ticket_min\":250000,\"ticket_max\":2000000,\"currency\":\"USD\"}],\"top_k\":1,\"candidate_pool_size\":5}"
+```
+
 ## Testing
 
 The repository includes unit tests for:
@@ -151,6 +212,12 @@ The repository includes unit tests for:
 - API request/response flow
 - evaluation metrics
 - entity resolution
+
+CI coverage:
+
+- dependency installation from `requirements.txt`
+- `python -m py_compile app/main.py`
+- `pytest`
 
 ## Next Extensions
 
