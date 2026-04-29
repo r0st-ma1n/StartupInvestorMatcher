@@ -1,0 +1,43 @@
+[project]
+name = "venture-match-engine"
+version = "0.1.0"
+description = "Production-style startup-investor matching service with semantic retrieval and explainable reranking."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "StartupInvestorMatcher" },
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+cache_dir = ".pytest_cache"
+tmp_path_retention_policy = "none"
+tmp_path_retention_count = 0
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+]
+ignore = [
+  "B008",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

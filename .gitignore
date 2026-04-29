@@ -7,3 +7,7 @@ __pycache__/
 data/*.csv
 models/
 checkpoints/
+manual_test_tmp/
+pytest_tmp/
+.pytest_tmp/
+pytest-cache-files-*/
