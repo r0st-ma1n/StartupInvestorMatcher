@@ -1,85 +1,62 @@
-# venture-match-engine
+# StartupInvestorMatcher
 
-Production-style portfolio project for startup-investor matching with a hybrid applied-ML and backend architecture.
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green?logo=fastapi)
+![SentenceTransformers](https://img.shields.io/badge/SentenceTransformers-enabled-orange)
+![Pytest](https://img.shields.io/badge/tests-43%20passed-success)
+![Status](https://img.shields.io/badge/status-MVP-success)
 
-Suggested GitHub topics:
+Production-style startup-investor matching service built with Python, FastAPI, semantic embeddings, cosine retrieval, and explainable reranking.
 
-- `python`
-- `fastapi`
-- `machine-learning`
-- `nlp`
-- `embeddings`
-- `information-retrieval`
-- `ranking`
-- `data-engineering`
-- `entity-resolution`
+## Features
 
-## What It Demonstrates
+- Semantic startup-investor retrieval with sentence embeddings
+- Cosine similarity candidate generation
+- Weighted rule-based reranking with explainable score breakdowns
+- Demo-ready FastAPI endpoints with default sample data
+- Precomputed investor embedding index with runtime fallback
+- Offline benchmark flow for retrieval vs reranking
+- Synthetic dataset generation for larger demo and evaluation runs
+- Baseline entity resolution and deduplication utilities
 
-- semantic retrieval with sentence embeddings
-- cosine-similarity candidate generation
-- explainable weighted reranking
-- FastAPI inference endpoint
-- evaluation metrics for ranking quality
-- baseline entity resolution / deduplication
+## Tech Stack
 
-## Current Architecture
+- Python
+- FastAPI
+- pandas
+- numpy
+- scikit-learn
+- sentence-transformers
+- pydantic
+- pytest
 
-```text
-app/
-  api/
-  models/
-  services/
-data/
-tests/
+## API Endpoints
+
+### `GET /health`
+
+Health check endpoint.
+
+Response:
+
+```json
+{
+  "status": "ok"
+}
 ```
 
-Core pipeline:
+### `GET /startups`
 
-1. load typed startup and investor profiles from CSV
-2. generate embeddings for profile text
-3. retrieve semantic top-k candidates with cosine similarity
-4. rerank candidates with weighted business rules
-5. return explainable match results
+Returns startup records from `data/examples/startups.sample.csv`.
 
-Why this repository is relevant for applied ML and data engineering interviews:
+### `GET /investors`
 
-- it demonstrates semantic retrieval rather than keyword-only matching
-- it separates candidate generation from reranking and business scoring
-- it includes evaluation metrics for retrieval quality
-- it includes a baseline entity resolution workflow for messy real-world data
-- it packages the logic behind a typed FastAPI service instead of notebook-only code
+Returns investor records from `data/examples/investors.sample.csv`.
 
-## Main Services
+### `POST /match`
 
-- `app/services/data_loader.py`
-  Loads and validates CSV data into typed domain models.
-- `app/services/embedding_service.py`
-  Formats profiles into retrieval text and generates embeddings.
-- `app/services/retrieval_service.py`
-  Computes cosine similarity and retrieves semantic candidates.
-- `app/services/scoring_service.py`
-  Applies rule-based scoring for industry, stage, geography, and ticket fit.
-- `app/services/matching_service.py`
-  Orchestrates retrieval and reranking into final `MatchResult` outputs.
-- `app/services/evaluation_service.py`
-  Computes `precision@k`, `recall@k`, and `hit-rate@k`.
-- `app/services/entity_resolution_service.py`
-  Performs lightweight deduplication with normalization, blocking, and fuzzy matching.
+Matches a custom startup payload against a provided investor list.
 
-## API
-
-Available demo endpoints:
-
-- `GET /health`
-- `GET /startups`
-- `GET /investors`
-- `POST /match`
-- `GET /match/{startup_id}`
-
-`POST /match`
-
-Request body:
+Request:
 
 ```json
 {
@@ -113,151 +90,7 @@ Request body:
 }
 ```
 
-## Quickstart
-
-Create a virtual environment and install dependencies:
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Run the API locally:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Run tests:
-
-```bash
-pytest --basetemp .pytest_tmp
-```
-
-Validate importable app syntax:
-
-```bash
-python -m py_compile app/main.py
-```
-
-Run the sample benchmark:
-
-```bash
-python scripts/run_benchmark.py --k 2
-```
-
-Build precomputed investor embeddings:
-
-```bash
-python scripts/build_index.py
-```
-
-Generate a small synthetic dataset:
-
-```bash
-python scripts/generate_synthetic_data.py --size small --seed 42
-```
-
-Overwrite an existing generated dataset:
-
-```bash
-python scripts/generate_synthetic_data.py --size medium --seed 42 --overwrite
-```
-
-Run the benchmark on generated data:
-
-```bash
-python scripts/run_benchmark.py --k 5 --startups-path data/generated/startups.csv --investors-path data/generated/investors.csv --ground-truth-path data/generated/ground_truth.csv
-```
-
-## Expected CSV Inputs
-
-`startups.csv`
-
-| column | required | description |
-| --- | --- | --- |
-| `startup_id` | yes | Unique startup identifier |
-| `name` | yes | Startup name |
-| `description` | yes | Free-text startup description |
-| `industries` | yes | Comma-separated industries or a normalized list upstream |
-| `stage` | yes | Funding stage such as `Pre-Seed`, `Seed`, `Series A` |
-| `country` | yes | Country focus |
-| `region` | yes | Region focus |
-| `fundraising_amount` | yes | Target raise amount |
-| `currency` | yes | Currency code, default domain assumption is `USD` |
-| `website` | no | Optional startup website |
-
-`investors.csv`
-
-| column | required | description |
-| --- | --- | --- |
-| `investor_id` | yes | Unique investor identifier |
-| `name` | yes | Investor or fund name |
-| `description` | yes | Free-text investor description |
-| `industries` | yes | Comma-separated target industries |
-| `preferred_stages` | yes | Comma-separated preferred startup stages |
-| `countries` | yes | Comma-separated country focus |
-| `regions` | yes | Comma-separated region focus |
-| `ticket_min` | yes | Minimum check size |
-| `ticket_max` | yes | Maximum check size |
-| `currency` | yes | Currency code |
-| `investor_type` | no | Optional type such as `VC`, `Angel`, `CVC` |
-| `website` | no | Optional investor website |
-
-Notes:
-
-- list-like fields are normalized by the loader from comma-separated strings
-- missing optional fields are handled gracefully in scoring and dedup flows
-- `ticket_min` must not exceed `ticket_max`
-
-Sample files are provided in:
-
-- `data/examples/startups.sample.csv`
-- `data/examples/investors.sample.csv`
-- `data/examples/ground_truth.sample.csv`
-
-Generated datasets are written to:
-
-- `data/generated/startups.csv`
-- `data/generated/investors.csv`
-- `data/generated/ground_truth.csv`
-
-## Local Run
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the API:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Example request:
-
-```bash
-curl -X POST "http://127.0.0.1:8000/match" ^
-  -H "Content-Type: application/json" ^
-  -d "{\"startup\":{\"startup_id\":\"s1\",\"name\":\"Acme AI\",\"description\":\"AI tooling for diligence\",\"industries\":[\"AI\"],\"stage\":\"Seed\",\"country\":\"US\",\"region\":\"North America\",\"fundraising_amount\":1000000,\"currency\":\"USD\"},\"investors\":[{\"investor_id\":\"i1\",\"name\":\"North Star Ventures\",\"description\":\"AI-focused seed fund\",\"industries\":[\"AI\"],\"preferred_stages\":[\"Seed\"],\"countries\":[\"US\"],\"regions\":[\"North America\"],\"ticket_min\":250000,\"ticket_max\":2000000,\"currency\":\"USD\"}],\"top_k\":1,\"candidate_pool_size\":5}"
-```
-
-Match a sample startup by ID:
-
-```bash
-curl "http://127.0.0.1:8000/match/s1?top_k=2&candidate_pool_size=2"
-```
-
-Health check:
-
-```bash
-curl "http://127.0.0.1:8000/health"
-```
-
-Expected response shape:
+Response:
 
 ```json
 {
@@ -295,77 +128,249 @@ Expected response shape:
 }
 ```
 
-## Precomputed Investor Index
+### `GET /match/{startup_id}`
 
-For production-style matching, the API can reuse precomputed investor embeddings instead of
-re-embedding the default investor catalog on every request.
+Matches a startup from the sample catalog against the sample investor catalog.
 
-Build the index artifact:
+Example:
+
+```text
+GET /match/s1?top_k=2&candidate_pool_size=4
+```
+
+## Run Locally
+
+### Clone Repository
+
+```bash
+git clone https://github.com/r0st-ma1n/StartupInvestorMatcher.git
+cd StartupInvestorMatcher
+```
+
+### Create Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```powershell
+.venv\Scripts\activate
+```
+
+Linux / macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run Server
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Example Requests
+
+Health check:
+
+```bash
+curl "http://127.0.0.1:8000/health"
+```
+
+Match startup from sample catalog:
+
+```bash
+curl "http://127.0.0.1:8000/match/s1?top_k=2&candidate_pool_size=4"
+```
+
+Match custom startup:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/match" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"startup\":{\"startup_id\":\"s1\",\"name\":\"Acme AI\",\"description\":\"AI tooling for diligence\",\"industries\":[\"AI\"],\"stage\":\"Seed\",\"country\":\"US\",\"region\":\"North America\",\"fundraising_amount\":1000000,\"currency\":\"USD\"},\"investors\":[{\"investor_id\":\"i1\",\"name\":\"North Star Ventures\",\"description\":\"AI-focused seed fund\",\"industries\":[\"AI\"],\"preferred_stages\":[\"Seed\"],\"countries\":[\"US\"],\"regions\":[\"North America\"],\"ticket_min\":250000,\"ticket_max\":2000000,\"currency\":\"USD\"}],\"top_k\":1,\"candidate_pool_size\":5}"
+```
+
+## Benchmark and Data Generation
+
+### Build Precomputed Investor Index
 
 ```bash
 python scripts/build_index.py
 ```
 
-Artifact location:
+Artifact:
 
-- `data/artifacts/investor_index.npz`
+```text
+data/artifacts/investor_index.npz
+```
 
-What is stored:
+API behavior:
 
-- investor ids
-- investor embeddings
-- embedding model name
-- source hash for the investors CSV
-- per-investor profile hashes used for safe reuse
+- uses precomputed investor embeddings when the artifact matches the current investor catalog and model
+- falls back to in-memory embedding generation when the artifact is missing or stale
 
-How the API uses it:
+Production tradeoff:
 
-- if the index artifact exists and the investor profiles match the stored hashes, the API uses the precomputed embeddings
-- if the artifact is missing or stale, the service falls back to in-memory embedding generation automatically
+- this removes repeated investor embedding work from request time
+- it does not yet provide background refresh, remote artifact storage, or multi-worker coordination
 
-Production tradeoffs:
+### Run Benchmark
 
-- this avoids repeated embedding work for stable investor catalogs
-- it is still a file-based MVP artifact, not a full vector index or refresh pipeline
-- for larger systems, you would usually add background rebuilds, versioning, and a dedicated retrieval store
+Sample data:
 
-## Testing
+```bash
+python scripts/run_benchmark.py --k 2
+```
 
-The repository includes unit tests for:
+Generated data:
 
-- CSV loading
-- embedding service behavior
-- retrieval ranking
-- scoring logic
-- end-to-end matching orchestration
-- API request/response flow
-- evaluation metrics
-- entity resolution
+```bash
+python scripts/run_benchmark.py --k 5 --startups-path data/generated/startups.csv --investors-path data/generated/investors.csv --ground-truth-path data/generated/ground_truth.csv
+```
 
-CI coverage:
-
-- dependency installation from `requirements.txt`
-- `python -m py_compile app/main.py`
-- `pytest`
-
-## Benchmarking
-
-The benchmark script compares:
+Compared pipelines:
 
 - semantic-only retrieval
-- retrieval plus rule-based reranking
+- retrieval + rule-based reranking
 
-Metrics reported:
+Metrics:
 
 - `precision@k`
 - `recall@k`
 - `hit-rate@k`
 - `MRR@k`
 
-## Next Extensions
+### Generate Synthetic Dataset
 
-- richer stage taxonomy and adjacency rules
-- cached investor embeddings for batch workloads
-- offline benchmark datasets for evaluation
+Generate a small dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size small --seed 42
+```
+
+Overwrite an existing generated dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size medium --seed 42 --overwrite
+```
+
+Generated files:
+
+- `data/generated/startups.csv`
+- `data/generated/investors.csv`
+- `data/generated/ground_truth.csv`
+
+## Testing
+
+Run tests:
+
+```bash
+python -m pytest
+```
+
+Validate syntax:
+
+```bash
+python -m py_compile app/main.py scripts/run_benchmark.py scripts/build_index.py scripts/generate_synthetic_data.py
+```
+
+## CSV Schemas
+
+### `startups.csv`
+
+| column | required | description |
+| --- | --- | --- |
+| `startup_id` | yes | Unique startup identifier |
+| `name` | yes | Startup name |
+| `description` | yes | Free-text startup description |
+| `industries` | yes | Comma-separated industries |
+| `stage` | yes | Funding stage such as `Pre-Seed`, `Seed`, `Series A` |
+| `country` | yes | Country focus |
+| `region` | yes | Region focus |
+| `fundraising_amount` | yes | Target raise amount |
+| `currency` | yes | Currency code |
+| `website` | no | Optional startup website |
+
+### `investors.csv`
+
+| column | required | description |
+| --- | --- | --- |
+| `investor_id` | yes | Unique investor identifier |
+| `name` | yes | Investor or fund name |
+| `description` | yes | Free-text investor description |
+| `industries` | yes | Comma-separated target industries |
+| `preferred_stages` | yes | Comma-separated preferred startup stages |
+| `countries` | yes | Comma-separated country focus |
+| `regions` | yes | Comma-separated region focus |
+| `ticket_min` | yes | Minimum check size |
+| `ticket_max` | yes | Maximum check size |
+| `currency` | yes | Currency code |
+| `investor_type` | no | Optional type such as `VC`, `Angel`, `CVC` |
+| `website` | no | Optional investor website |
+
+### `ground_truth.csv`
+
+| column | required | description |
+| --- | --- | --- |
+| `startup_id` | yes | Startup identifier |
+| `investor_id` | yes | Relevant investor identifier |
+
+## Project Structure
+
+```text
+app/
+├── api/
+├── core/
+├── models/
+├── services/
+├── utils/
+├── config.py
+└── main.py
+data/
+├── artifacts/
+├── examples/
+└── generated/
+scripts/
+tests/
+```
+
+## Why This Project Matters
+
+This repository is meant to show applied ML and backend engineering together:
+
+- semantic embeddings for retrieval
+- candidate generation and top-k ranking
+- explainable rule-based reranking
+- benchmarkable ranking metrics
+- production-style service boundaries
+
+## Future Improvements
+
+- cached or remote-managed embedding refresh workflows
+- richer stage taxonomy and geo normalization
+- larger labeled benchmark datasets
 - stronger probabilistic entity resolution
-- optional vector index or ANN retrieval for scale
+- ANN retrieval or vector index integration
+
+## Suggested GitHub Topics
+
+`python` `fastapi` `machine-learning` `nlp` `embeddings` `retrieval` `ranking` `recommendation-system` `applied-ml` `data-engineering`
+
+## Author
+
+Built as a Python backend and applied ML portfolio project focused on retrieval, ranking, evaluation, and service design.
