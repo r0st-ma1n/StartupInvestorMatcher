@@ -16,17 +16,27 @@ from app.api.schemas import (
 from app.services import CatalogService, MatchingService
 
 
-router = APIRouter(tags=["matching"])
+router = APIRouter()
 
 
-@router.get("/health", response_model=HealthResponse, tags=["health"])
+@router.get(
+    "/health",
+    response_model=HealthResponse,
+    tags=["health"],
+    summary="Health check",
+)
 def health_check() -> HealthResponse:
     """Simple health endpoint for smoke checks and orchestration probes."""
 
     return HealthResponse(status="ok")
 
 
-@router.get("/startups", response_model=StartupListResponse, tags=["catalog"])
+@router.get(
+    "/startups",
+    response_model=StartupListResponse,
+    tags=["catalog"],
+    summary="List startups",
+)
 def list_startups(
     catalog_service: CatalogService = Depends(get_catalog_service),
 ) -> StartupListResponse:
@@ -35,7 +45,12 @@ def list_startups(
     return StartupListResponse(startups=catalog_service.list_startups())
 
 
-@router.get("/investors", response_model=InvestorListResponse, tags=["catalog"])
+@router.get(
+    "/investors",
+    response_model=InvestorListResponse,
+    tags=["catalog"],
+    summary="List investors",
+)
 def list_investors(
     catalog_service: CatalogService = Depends(get_catalog_service),
 ) -> InvestorListResponse:
@@ -44,7 +59,12 @@ def list_investors(
     return InvestorListResponse(investors=catalog_service.list_investors())
 
 
-@router.post("/match", response_model=MatchResponse)
+@router.post(
+    "/match",
+    response_model=MatchResponse,
+    tags=["matching"],
+    summary="Match startup to investors",
+)
 def match_startup_to_investors(
     payload: MatchRequest,
     matching_service: MatchingService = Depends(get_matching_service),
@@ -60,7 +80,12 @@ def match_startup_to_investors(
     return MatchResponse(matches=_to_match_items(matches))
 
 
-@router.get("/match/{startup_id}", response_model=MatchResponse)
+@router.get(
+    "/match/{startup_id}",
+    response_model=MatchResponse,
+    tags=["matching"],
+    summary="Match startup from catalog",
+)
 def match_startup_from_catalog(
     startup_id: str,
     top_k: Annotated[int | None, Query(ge=1)] = None,
