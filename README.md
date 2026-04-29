@@ -183,6 +183,28 @@ Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
+### Generate Demo CSV Data
+
+This project also includes an offline dataset generator. It is not a Swagger endpoint, it is a CLI script for creating demo and benchmark datasets.
+
+Generate a small dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size small --seed 42
+```
+
+Overwrite an existing generated dataset:
+
+```bash
+python scripts/generate_synthetic_data.py --size medium --seed 42 --overwrite
+```
+
+Generated files:
+
+- `data/generated/startups.csv`
+- `data/generated/investors.csv`
+- `data/generated/ground_truth.csv`
+
 ### Example Requests
 
 Health check:
@@ -257,23 +279,11 @@ Metrics:
 
 ### Generate Synthetic Dataset
 
-Generate a small dataset:
+You can reuse the same generator for larger benchmark-ready datasets:
 
 ```bash
-python scripts/generate_synthetic_data.py --size small --seed 42
+python scripts/generate_synthetic_data.py --size large --seed 42 --overwrite
 ```
-
-Overwrite an existing generated dataset:
-
-```bash
-python scripts/generate_synthetic_data.py --size medium --seed 42 --overwrite
-```
-
-Generated files:
-
-- `data/generated/startups.csv`
-- `data/generated/investors.csv`
-- `data/generated/ground_truth.csv`
 
 ## Testing
 
