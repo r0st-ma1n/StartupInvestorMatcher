@@ -11,7 +11,7 @@ data/artifacts/*
 !data/artifacts/.gitkeep
 data/generated/*
 !data/generated/.gitkeep
-models/
+/models/
 checkpoints/
 manual_test_tmp/
 tests/_tmp/
